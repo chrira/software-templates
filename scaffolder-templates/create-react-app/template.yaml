@@ -1,8 +1,8 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: create-react-app-template-re
-  title: Create React App Template RE
+  name: create-react-app-template-re-demo
+  title: Create React App Template RE Demo
   description: Create a new CRA website project
   tags:
     - react
@@ -21,6 +21,11 @@ spec:
           type: string
           description: Unique name of the component
           ui:field: EntityNamePicker
+        group_id:
+          title: Group Id
+          type: string
+          default: redhat.janus
+          description: Maven Group Id
         description:
           title: Description
           type: string
@@ -35,15 +40,25 @@ spec:
               - Group
     - title: Choose a location
       required:
-        - repoUrl
+        - repo
       properties:
-        repoUrl:
+        repo:
           title: Repository Location
-          type: string
-          ui:field: RepoUrlPicker
-          ui:options:
-            allowedHosts:
-              - github.com
+          type: object
+          properties:
+            host:
+              title: Repo Host
+              type: string
+              description: Your SCM host
+              default: gitlab-gitlab.apps.cluster-pq5qj.pq5qj.sandbox1544.opentlc.com
+            owner:
+              title: Repo Owner
+              type: string
+              description: Your SCM host organization/group
+              default: development
+              enum:
+                - development
+
   steps:
     - id: template
       name: Fetch Skeleton + Template
@@ -60,12 +75,10 @@ spec:
 
     - id: publish
       name: Publish
-      action: publish:github
+      action: publish:gitlab
       input:
-        allowedHosts:
-          - github.com
-        description: This is ${{ parameters.component_id }}
-        repoUrl: ${{ parameters.repoUrl }}
+        repoUrl: "${{ parameters.repo.host }}?owner=${{ parameters.repo.owner }}&repo=${{parameters.component_id}}"
+        repoVisibility: public
 
     - id: register
       name: Register
